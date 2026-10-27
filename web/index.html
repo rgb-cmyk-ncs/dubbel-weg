@@ -1,0 +1,421 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<title>DubbelWeg</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root {
+  --bg: #0e0f12; --panel: #17191e; --panel2: #1e2128; --line: #2a2e36; --text: #eceef2; --dim: #8b909a;
+  --accent: #3dd6c6; --red: #ff5a52; --amber: #ffb224; --green: #35d07f;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.4 "Segoe UI", system-ui, sans-serif; }
+main { max-width: 1180px; margin: 0 auto; padding: 22px 22px 120px; }
+h1 { margin: 0; font-size: 26px; letter-spacing: -0.5px; }
+h1 span { color: var(--accent); }
+.sub { color: var(--dim); margin: 2px 0 22px; }
+h2 { font-size: 12px; letter-spacing: 1.5px; color: var(--dim); margin: 26px 0 10px; font-weight: 700; }
+.drives { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.drive { background: var(--panel); border: 2px solid var(--line); border-radius: 12px; padding: 12px 14px; cursor: pointer; user-select: none; }
+.drive.on { border-color: var(--accent); background: #13302d; }
+.drive b { font-size: 17px; }
+.drive .k { color: var(--dim); font-size: 13px; }
+.bar { height: 6px; background: var(--line); border-radius: 3px; margin-top: 8px; overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--accent); }
+.folders { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.tag { background: var(--panel2); border: 1px solid var(--line); border-radius: 20px; padding: 6px 8px 6px 14px; display: inline-flex; gap: 8px; align-items: center; }
+.tag button { background: none; border: 0; color: var(--dim); font-size: 16px; cursor: pointer; padding: 0 4px; }
+button.btn { background: var(--panel2); color: var(--text); border: 1px solid var(--line); border-radius: 10px; padding: 9px 16px; font: inherit; cursor: pointer; }
+button.btn:hover { border-color: var(--accent); }
+button.big { background: var(--accent); color: #062b27; border: 0; font-weight: 700; font-size: 18px; padding: 14px 28px; border-radius: 12px; }
+button.big:disabled { opacity: 0.4; cursor: default; }
+button.danger { background: var(--red); color: #fff; border: 0; font-weight: 700; }
+button.danger:disabled { opacity: 0.35; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { padding: 8px 14px; border-radius: 20px; background: var(--panel); border: 1px solid var(--line); cursor: pointer; user-select: none; }
+.chip.on { background: var(--accent); color: #062b27; border-color: var(--accent); font-weight: 600; }
+.row { display: flex; gap: 22px; flex-wrap: wrap; align-items: flex-start; }
+select { background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 8px; font: inherit; }
+label.chk { display: flex; gap: 8px; align-items: center; cursor: pointer; margin-top: 8px; }
+input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--red); }
+.progress { background: var(--panel); border-radius: 14px; padding: 18px; margin-top: 18px; }
+.progress .big2 { font-size: 20px; font-weight: 600; }
+.progress .cur { color: var(--dim); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 6px; font-family: Consolas, monospace; }
+.summary { background: var(--panel); border-radius: 14px; padding: 16px 18px; display: flex; gap: 28px; flex-wrap: wrap; align-items: center; }
+.summary .n { font-size: 24px; font-weight: 700; }
+.summary .l { color: var(--dim); font-size: 12px; }
+.tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 14px 0; }
+.tools input[type=search] { flex: 1; min-width: 200px; background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 10px; padding: 9px 12px; font: inherit; }
+.group { background: var(--panel); border-radius: 12px; margin-bottom: 10px; overflow: hidden; }
+.gh { display: flex; gap: 12px; align-items: baseline; padding: 10px 14px; background: var(--panel2); }
+.gh .name { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+.gh .meta { color: var(--dim); font-size: 13px; white-space: nowrap; }
+.file { display: flex; gap: 10px; align-items: center; padding: 7px 14px; border-top: 1px solid var(--line); }
+.file.sel { background: #3a1a1a; }
+.file .p { flex: 1; min-width: 0; font-family: Consolas, monospace; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; direction: rtl; text-align: left; }
+.file .p span { direction: ltr; unicode-bidi: plaintext; }
+.file .p .dir { color: var(--dim); }
+.file .d { color: var(--dim); font-size: 12px; white-space: nowrap; }
+.file .keep { color: var(--green); font-size: 12px; font-weight: 600; width: 60px; }
+.file .del { color: var(--red); font-size: 12px; font-weight: 600; width: 60px; }
+.mini { background: none; border: 1px solid var(--line); color: var(--dim); border-radius: 7px; padding: 3px 9px; cursor: pointer; font: inherit; font-size: 12px; }
+.mini:hover { color: var(--text); border-color: var(--accent); }
+.foot { position: fixed; left: 0; right: 0; bottom: 0; background: #0b0c0fee; border-top: 1px solid var(--line); padding: 12px 22px; display: none; }
+.foot .in { max-width: 1180px; margin: 0 auto; display: flex; gap: 16px; align-items: center; }
+.foot .t { flex: 1; }
+.modal { position: fixed; inset: 0; background: #000b; display: none; align-items: center; justify-content: center; z-index: 10; }
+.modal .box { background: var(--panel); border-radius: 16px; padding: 22px; max-width: 640px; width: 92%; max-height: 88vh; overflow: auto; }
+.modal img, .modal video { max-width: 100%; max-height: 64vh; display: block; margin: 10px auto; border-radius: 8px; }
+.modal audio { width: 100%; margin: 14px 0; }
+.toast { position: fixed; top: 18px; left: 50%; transform: translateX(-50%); background: var(--panel2); border: 1px solid var(--line); border-radius: 12px; padding: 12px 18px; display: none; z-index: 20; max-width: 90%; }
+.hint { color: var(--dim); font-size: 13px; }
+.more { text-align: center; margin: 14px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Dubbel<span>Weg</span></h1>
+  <div class="sub">Vindt bestanden met precies dezelfde inhoud, ook als de naam anders is. Van elk bestand blijft altijd minstens één exemplaar staan.</div>
+
+  <section id="setup">
+    <h2>1 · WAAR ZOEKEN?</h2>
+    <div class="drives" id="drives"></div>
+    <div class="folders" id="folders">
+      <button class="btn" id="addFolder">+ Map kiezen</button>
+    </div>
+
+    <h2>2 · WAT ZOEKEN?</h2>
+    <div class="row">
+      <div>
+        <div class="chips" id="kinds">
+          <div class="chip on" data-k="">Alles</div>
+          <div class="chip" data-k="muziek">Muziek</div>
+          <div class="chip" data-k="fotos">Foto's</div>
+          <div class="chip" data-k="video">Video</div>
+          <div class="chip" data-k="documenten">Documenten</div>
+        </div>
+        <label class="chk"><input type="checkbox" id="skipSystem" checked style="accent-color:var(--accent)"> Windows- en programmamappen overslaan (aanbevolen)</label>
+      </div>
+      <div>
+        <div class="hint" style="margin-bottom:6px">Bestanden kleiner dan dit overslaan</div>
+        <select id="minSize">
+          <option value="1024">1 KB</option>
+          <option value="102400">100 KB</option>
+          <option value="1048576" selected>1 MB</option>
+          <option value="10485760">10 MB</option>
+          <option value="104857600">100 MB</option>
+        </select>
+      </div>
+    </div>
+    <div style="margin-top:22px"><button class="big" id="go">Zoek dubbele bestanden</button></div>
+  </section>
+
+  <section class="progress" id="progress" style="display:none">
+    <div class="big2" id="pPhase">Zoeken…</div>
+    <div class="hint" id="pNums"></div>
+    <div class="bar" style="height:10px;margin-top:12px"><i id="pBar" style="width:0"></i></div>
+    <div class="cur" id="pCur"></div>
+    <div style="margin-top:14px"><button class="btn" id="cancel">Stop</button></div>
+  </section>
+
+  <section id="results" style="display:none">
+    <h2>3 · RESULTAAT</h2>
+    <div class="summary" id="summary"></div>
+    <div class="tools">
+      <span class="hint">Automatisch aanvinken, per groep bewaren:</span>
+      <button class="btn" data-auto="oldest">Oudste</button>
+      <button class="btn" data-auto="newest">Nieuwste</button>
+      <button class="btn" data-auto="short">Kortste pad</button>
+      <select id="keepIn"><option value="">In map…</option></select>
+      <button class="btn" data-auto="none">Niets aanvinken</button>
+    </div>
+    <div class="tools">
+      <input type="search" id="filter" placeholder="Filter op naam of map, bijv. Downloads of .mp3">
+      <button class="btn" id="again">Nieuwe zoekopdracht</button>
+      <button class="btn" id="log">Logboek</button>
+    </div>
+    <div id="groups"></div>
+    <div class="more" id="more"></div>
+  </section>
+</main>
+
+<div class="foot" id="foot"><div class="in">
+  <div class="t" id="footText"></div>
+  <button class="btn danger" id="remove">Verwijder aangevinkte</button>
+</div></div>
+
+<div class="modal" id="modal"><div class="box" id="modalBox"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const api = async (path, body) => {
+  const r = await fetch(path, { method: 'POST', headers: { 'X-DubbelWeg': '1', 'Content-Type': 'application/json' }, body: JSON.stringify(body || {}) });
+  if (!r.ok) throw new Error((await r.text()).trim() || r.statusText);
+  return r.json();
+};
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+function size(b) {
+  if (b >= 1e12) return (b / 1e12).toFixed(2) + ' TB';
+  if (b >= 1e9) return (b / 1e9).toFixed(2) + ' GB';
+  if (b >= 1e6) return (b / 1e6).toFixed(1) + ' MB';
+  if (b >= 1e3) return Math.round(b / 1e3) + ' KB';
+  return b + ' B';
+}
+function date(s) { const d = new Date(s); return d.toLocaleDateString('nl-NL') + ' ' + d.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' }); }
+function toast(t, ms) {
+  const el = $('toast'); el.textContent = t; el.style.display = 'block';
+  clearTimeout(toast.t); toast.t = setTimeout(() => (el.style.display = 'none'), ms || 3500);
+}
+function sep(p) { const i = Math.max(p.lastIndexOf('\\'), p.lastIndexOf('/')); return [p.slice(0, i + 1), p.slice(i + 1)]; }
+
+// Keep the program alive while this window is open.
+setInterval(() => api('/api/ping').catch(() => {}), 5000);
+api('/api/ping').catch(() => {});
+
+// ---------- 1. where ----------
+const roots = new Set();
+let driveList = [];
+async function loadDrives() {
+  driveList = await api('/api/drives');
+  $('drives').innerHTML = driveList.map((d, i) => {
+    const used = d.total ? Math.round((1 - d.free / d.total) * 100) : 0;
+    return '<div class="drive" data-i="' + i + '"><b>' + esc(d.root.replace('\\', '')) + '</b> ' + esc(d.label || '') +
+      '<div class="k">' + esc(d.kind) + ' · ' + size(d.free) + ' vrij van ' + size(d.total) + '</div>' +
+      '<div class="bar"><i style="width:' + used + '%;background:' + (used > 90 ? 'var(--red)' : 'var(--accent)') + '"></i></div></div>';
+  }).join('');
+  document.querySelectorAll('.drive').forEach((el) => el.onclick = () => {
+    const r = driveList[el.dataset.i].root;
+    if (roots.has(r)) roots.delete(r); else roots.add(r);
+    showRoots();
+  });
+}
+function showRoots() {
+  document.querySelectorAll('.drive').forEach((el) => el.classList.toggle('on', roots.has(driveList[el.dataset.i].root)));
+  const folders = [...roots].filter((r) => !driveList.some((d) => d.root === r));
+  $('folders').innerHTML = folders.map((f) => '<span class="tag">' + esc(f) + '<button data-f="' + esc(f) + '" title="Weghalen">×</button></span>').join('') +
+    '<button class="btn" id="addFolder">+ Map kiezen</button>';
+  $('folders').querySelectorAll('button[data-f]').forEach((b) => b.onclick = () => { roots.delete(b.dataset.f); showRoots(); });
+  $('addFolder').onclick = addFolder;
+  $('go').disabled = roots.size === 0;
+}
+async function addFolder() {
+  toast('Kies een map in het venster dat opent (soms staat het erachter).');
+  const r = await api('/api/pick');
+  if (r.path) { roots.add(r.path); showRoots(); }
+}
+
+// ---------- 2. what ----------
+document.querySelectorAll('#kinds .chip').forEach((c) => c.onclick = () => {
+  const all = c.dataset.k === '';
+  if (all) document.querySelectorAll('#kinds .chip').forEach((x) => x.classList.toggle('on', x === c));
+  else {
+    c.classList.toggle('on');
+    const any = document.querySelectorAll('#kinds .chip.on:not([data-k=""])').length > 0;
+    document.querySelector('#kinds .chip[data-k=""]').classList.toggle('on', !any);
+  }
+});
+
+$('go').onclick = async () => {
+  const kinds = [...document.querySelectorAll('#kinds .chip.on')].map((c) => c.dataset.k).filter(Boolean);
+  try {
+    await api('/api/scan', { roots: [...roots], minSize: +$('minSize').value, kinds, skipSystem: $('skipSystem').checked });
+  } catch (e) { toast(e.message); return; }
+  $('setup').style.display = 'none'; $('results').style.display = 'none'; $('foot').style.display = 'none';
+  $('progress').style.display = 'block';
+  poll();
+};
+$('cancel').onclick = () => api('/api/cancel');
+
+const phases = { zoeken: 'Bestanden zoeken…', vergelijken: 'Vergelijken (snel)…', controleren: 'Controleren (hele bestanden)…', klaar: 'Klaar' };
+async function poll() {
+  const s = await api('/api/status').catch(() => null);
+  if (s) {
+    $('pPhase').textContent = phases[s.phase] || 'Bezig…';
+    $('pNums').textContent = (s.files || 0).toLocaleString('nl-NL') + ' bestanden bekeken · ' +
+      (s.candidates || 0).toLocaleString('nl-NL') + ' met dezelfde grootte · ' + Math.floor((s.seconds || 0) / 60) + ':' + String((s.seconds || 0) % 60).padStart(2, '0');
+    const pct = s.phase === 'zoeken' ? 0 : s.bytesTotal ? Math.min(100, s.bytesDone / s.bytesTotal * 100) : 100;
+    $('pBar').style.width = pct + '%';
+    $('pCur').textContent = s.current || '';
+    if (!s.running) {
+      $('progress').style.display = 'none';
+      if (s.cancelled) { $('setup').style.display = 'block'; toast('Gestopt.'); return; }
+      await loadResults(s);
+      return;
+    }
+  }
+  setTimeout(poll, 400);
+}
+
+// ---------- 3. results ----------
+let groups = [];
+const selected = new Set();
+let shown = 100;
+let lastStatus = null;
+
+async function loadResults(s) {
+  lastStatus = s || lastStatus;
+  const r = await api('/api/results');
+  groups = r.groups;
+  for (const p of [...selected]) if (!groups.some((g) => g.files.some((f) => f.path === p))) selected.delete(p);
+  $('results').style.display = 'block';
+  fillKeepIn();
+  render();
+}
+
+function fillKeepIn() {
+  const dirs = new Map();
+  for (const g of groups) for (const f of g.files) {
+    const parts = sep(f.path)[0].split(/[\\/]/).filter(Boolean);
+    for (let i = 1; i <= Math.min(parts.length, 3); i++) {
+      const d = parts.slice(0, i).join('\\') + '\\';
+      dirs.set(d, (dirs.get(d) || 0) + 1);
+    }
+  }
+  const list = [...dirs.entries()].filter(([, n]) => n > 1).sort((a, b) => a[0].localeCompare(b[0])).slice(0, 300);
+  $('keepIn').innerHTML = '<option value="">In map…</option>' + list.map(([d, n]) => '<option value="' + esc(d) + '">' + esc(d) + ' (' + n + ')</option>').join('');
+}
+
+function visibleGroups() {
+  const q = $('filter').value.trim().toLowerCase();
+  return q ? groups.filter((g) => g.files.some((f) => f.path.toLowerCase().includes(q))) : groups;
+}
+
+function render() {
+  const wasted = groups.reduce((a, g) => a + g.size * (g.files.length - 1), 0);
+  const extra = groups.reduce((a, g) => a + g.files.length - 1, 0);
+  $('summary').innerHTML = groups.length === 0
+    ? '<div><div class="n" style="color:var(--green)">Geen dubbele bestanden gevonden</div><div class="l">' + (lastStatus ? (lastStatus.files || 0).toLocaleString('nl-NL') + ' bestanden bekeken' : '') + '</div></div>'
+    : '<div><div class="n">' + groups.length.toLocaleString('nl-NL') + '</div><div class="l">bestanden met kopieën</div></div>' +
+      '<div><div class="n">' + extra.toLocaleString('nl-NL') + '</div><div class="l">overbodige kopieën</div></div>' +
+      '<div><div class="n" style="color:var(--accent)">' + size(wasted) + '</div><div class="l">te winnen ruimte</div></div>' +
+      (lastStatus && lastStatus.skipped ? '<div><div class="n" style="color:var(--amber)">' + lastStatus.skipped + '</div><div class="l">niet leesbaar (overgeslagen)</div></div>' : '');
+  const vis = visibleGroups();
+  $('groups').innerHTML = vis.slice(0, shown).map((g, gi) => {
+    const name = sep(g.files[0].path)[1];
+    return '<div class="group"><div class="gh"><div class="name">' + esc(name) + '</div><div class="meta">' + size(g.size) + ' · ' + g.files.length + ' exemplaren</div></div>' +
+      g.files.map((f) => {
+        const [dir, file] = sep(f.path);
+        const on = selected.has(f.path);
+        const media = /\.(jpe?g|png|gif|webp|bmp|mp3|wav|m4a|aac|ogg|flac|mp4|webm|mov)$/i.test(file);
+        return '<div class="file' + (on ? ' sel' : '') + '"><input type="checkbox" data-p="' + esc(f.path) + '"' + (on ? ' checked' : '') + '>' +
+          '<span class="' + (on ? 'del' : 'keep') + '">' + (on ? 'WEG' : 'blijft') + '</span>' +
+          '<div class="p" title="' + esc(f.path) + '"><span><span class="dir">' + esc(dir) + '</span>' + esc(file) + '</span></div>' +
+          '<span class="d">' + date(f.mod) + '</span>' +
+          (media ? '<button class="mini" data-view="' + esc(f.path) + '">Bekijk</button>' : '<button class="mini" data-open="' + esc(f.path) + '">Open</button>') +
+          '<button class="mini" data-reveal="' + esc(f.path) + '">Toon in map</button></div>';
+      }).join('') + '</div>';
+  }).join('');
+  $('more').innerHTML = vis.length > shown ? '<button class="btn" id="showMore">Toon meer (' + (vis.length - shown) + ' over)</button>' : '';
+  if ($('showMore')) $('showMore').onclick = () => { shown += 200; render(); };
+  $('groups').querySelectorAll('input[type=checkbox]').forEach((c) => c.onchange = () => toggle(c.dataset.p, c.checked));
+  $('groups').querySelectorAll('[data-reveal]').forEach((b) => b.onclick = () => api('/api/reveal', { path: b.dataset.reveal }).catch((e) => toast(e.message)));
+  $('groups').querySelectorAll('[data-open]').forEach((b) => b.onclick = () => api('/api/open', { path: b.dataset.open }).catch((e) => toast(e.message)));
+  $('groups').querySelectorAll('[data-view]').forEach((b) => b.onclick = () => view(b.dataset.view));
+  updateFoot();
+}
+
+function groupOf(p) { return groups.find((g) => g.files.some((f) => f.path === p)); }
+
+function toggle(p, on) {
+  if (on) {
+    const g = groupOf(p);
+    const left = g.files.filter((f) => f.path !== p && !selected.has(f.path)).length;
+    if (left === 0) { toast('Van elk bestand blijft er minstens één staan.'); render(); return; }
+    selected.add(p);
+  } else selected.delete(p);
+  render();
+}
+
+function updateFoot() {
+  let n = 0, b = 0;
+  for (const g of groups) for (const f of g.files) if (selected.has(f.path)) { n++; b += g.size; }
+  $('foot').style.display = groups.length ? 'block' : 'none';
+  $('footText').innerHTML = n ? '<b>' + n.toLocaleString('nl-NL') + '</b> aangevinkt · <b>' + size(b) + '</b> ruimte terug' : 'Vink aan wat weg mag, of gebruik "Automatisch aanvinken" hierboven.';
+  $('remove').disabled = n === 0;
+}
+
+document.querySelectorAll('[data-auto]').forEach((b) => b.onclick = () => auto(b.dataset.auto));
+$('keepIn').onchange = () => { if ($('keepIn').value) auto('folder', $('keepIn').value); };
+
+function auto(rule, folder) {
+  const vis = visibleGroups();
+  let skipped = 0;
+  for (const g of vis) {
+    for (const f of g.files) selected.delete(f.path);
+    if (rule === 'none') continue;
+    let keep;
+    if (rule === 'oldest') keep = g.files.reduce((a, f) => new Date(f.mod) < new Date(a.mod) ? f : a);
+    if (rule === 'newest') keep = g.files.reduce((a, f) => new Date(f.mod) > new Date(a.mod) ? f : a);
+    if (rule === 'short') keep = g.files.reduce((a, f) => f.path.length < a.path.length ? f : a);
+    if (rule === 'folder') {
+      const inside = g.files.filter((f) => f.path.toLowerCase().startsWith(folder.toLowerCase()));
+      if (inside.length === 0) { skipped++; continue; }
+      keep = inside[0];
+      // Copies elsewhere go; extra copies inside the folder stay too.
+      for (const f of g.files) if (!inside.includes(f)) selected.add(f.path);
+      continue;
+    }
+    for (const f of g.files) if (f !== keep) selected.add(f.path);
+  }
+  $('keepIn').value = '';
+  render();
+  if (skipped) toast(skipped + ' groepen hebben geen exemplaar in die map; daar is niets aangevinkt.');
+}
+
+$('filter').oninput = () => { shown = 100; render(); };
+$('again').onclick = () => { $('results').style.display = 'none'; $('foot').style.display = 'none'; $('setup').style.display = 'block'; };
+$('log').onclick = () => api('/api/log').catch((e) => toast(e.message));
+
+function modal(html) {
+  $('modalBox').innerHTML = html;
+  $('modal').style.display = 'flex';
+}
+$('modal').onclick = (e) => { if (e.target === $('modal')) closeModal(); };
+function closeModal() { $('modal').style.display = 'none'; $('modalBox').innerHTML = ''; }
+
+function view(p) {
+  const url = '/api/file?path=' + encodeURIComponent(p);
+  const name = esc(sep(p)[1]);
+  let el;
+  if (/\.(mp3|wav|m4a|aac|ogg|flac)$/i.test(p)) el = '<audio controls autoplay src="' + url + '"></audio>';
+  else if (/\.(mp4|webm|mov)$/i.test(p)) el = '<video controls autoplay src="' + url + '"></video>';
+  else el = '<img src="' + url + '">';
+  modal('<b>' + name + '</b><div class="hint">' + esc(p) + '</div>' + el + '<button class="btn" onclick="closeModal()">Sluiten</button>');
+}
+
+$('remove').onclick = () => {
+  const paths = [...selected];
+  let b = 0;
+  for (const g of groups) for (const f of g.files) if (selected.has(f.path)) b += g.size;
+  modal('<h3 style="margin-top:0">' + paths.length.toLocaleString('nl-NL') + ' bestanden weghalen?</h3>' +
+    '<p>Samen <b>' + size(b) + '</b>. Van elk bestand blijft minstens één exemplaar staan.</p>' +
+    '<p class="hint">Op de computer zelf gaan ze naar de <b>Prullenbak</b> (terug te zetten).<br>' +
+    'Op USB-sticks en kaarten gaan ze naar de map <b>_Dubbelen (verwijderd)</b> op die stick: kijk ze na en gooi die map daarna zelf weg.</p>' +
+    '<div style="display:flex;gap:10px;margin-top:16px"><button class="btn danger" id="yes">Ja, weghalen</button><button class="btn" onclick="closeModal()">Annuleren</button></div>');
+  $('yes').onclick = async () => {
+    $('modalBox').innerHTML = '<p>Bezig met weghalen…</p>';
+    try {
+      const r = await api('/api/remove', { paths });
+      const ok = r.results.filter((x) => x.ok);
+      const bad = r.results.filter((x) => !x.ok);
+      for (const x of ok) selected.delete(x.path);
+      const q = [...new Set(ok.filter((x) => x.how !== 'Prullenbak').map((x) => x.how))];
+      modal('<h3 style="margin-top:0">' + ok.length.toLocaleString('nl-NL') + ' weggehaald</h3>' +
+        (bad.length ? '<p style="color:var(--amber)">' + bad.length + ' niet gelukt:</p><div class="hint" style="font-family:Consolas,monospace;font-size:12px">' +
+          bad.slice(0, 30).map((x) => esc(x.path) + ' — ' + esc(x.err)).join('<br>') + '</div>' : '') +
+        (q.length ? '<p>Van USB/kaart verplaatst naar:</p>' + q.map((d) => '<button class="mini" data-q="' + esc(d) + '">' + esc(d) + '</button>').join(' ') : '') +
+        '<div style="margin-top:16px"><button class="btn" onclick="closeModal()">Sluiten</button></div>');
+      $('modalBox').querySelectorAll('[data-q]').forEach((b2) => b2.onclick = () => api('/api/open', { path: b2.dataset.q }));
+      await loadResults();
+    } catch (e) {
+      modal('<p style="color:var(--red)">' + esc(e.message) + '</p><button class="btn" onclick="closeModal()">Sluiten</button>');
+    }
+  };
+};
+
+loadDrives().then(showRoots);
+</script>
+</body>
+</html>

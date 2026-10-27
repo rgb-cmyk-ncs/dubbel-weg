@@ -1,0 +1,13 @@
+# DubbelWeg
+
+Windows program that finds files with exactly the same content (any drive, also USB sticks)
+and removes the extra copies safely:
+- fixed drives: to the Recycle Bin;
+- USB sticks / cards: moved to `_Dubbelen (verwijderd)` at the root of that stick.
+At least one copy of every file always stays. Files are compared by size, then a quick
+fingerprint, then a full SHA-256 of the whole file.
+
+The screen is a local page in an Edge/Chrome app window (127.0.0.1:47124); nothing goes online.
+Removals are logged in `%LOCALAPPDATA%\DubbelWeg\verwijderd.txt`.
+
+Build: push to GitHub; the workflow tests, builds `DubbelWeg.exe` and publishes it as release `latest`.
