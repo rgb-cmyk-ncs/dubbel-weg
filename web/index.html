@@ -71,24 +71,6 @@ input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--red); }
 .toast { position: fixed; top: 18px; left: 50%; transform: translateX(-50%); background: var(--panel2); border: 1px solid var(--line); border-radius: 12px; padding: 12px 18px; display: none; z-index: 20; max-width: 90%; }
 .hint { color: var(--dim); font-size: 13px; }
 .more { text-align: center; margin: 14px; }
-.tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 0 0 8px; border-bottom: 1px solid var(--line); }
-.tab { padding: 10px 16px; cursor: pointer; color: var(--dim); border-bottom: 3px solid transparent; user-select: none; font-weight: 600; }
-.tab.on { color: var(--text); border-color: var(--accent); }
-.pick { display: flex; gap: 10px; align-items: center; margin: 8px 0; flex-wrap: wrap; }
-.pick .lab { width: 54px; color: var(--dim); }
-.pick .chosen { flex: 1; min-width: 220px; font-family: Consolas, monospace; font-size: 14px; background: var(--panel2); padding: 9px 12px; border-radius: 8px; color: var(--dim); }
-.pick .chosen.set { color: var(--text); }
-.card { background: var(--panel); border-radius: 14px; padding: 16px 18px; margin-bottom: 12px; }
-.lvl-kapot { color: var(--red); font-weight: 700; font-size: 12px; width: 70px; }
-.lvl-verdacht { color: var(--amber); font-weight: 700; font-size: 12px; width: 70px; }
-.reason { color: var(--dim); font-size: 12px; width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.radio { display: flex; gap: 10px; flex-wrap: wrap; margin: 10px 0; }
-.radio label { background: var(--panel2); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; cursor: pointer; display: flex; gap: 8px; align-items: flex-start; max-width: 420px; }
-.radio input { accent-color: var(--accent); margin-top: 3px; }
-.binrow { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); flex-wrap: wrap; }
-.binrow:first-of-type { border-top: 0; }
-.binrow .what { flex: 1; min-width: 240px; }
-.binrow .sz { font-size: 18px; font-weight: 700; min-width: 100px; text-align: right; }
 </style>
 </head>
 <body>
@@ -96,14 +78,6 @@ input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--red); }
   <h1>Dubbel<span>Weg</span></h1>
   <div class="sub">Vindt bestanden met precies dezelfde inhoud, ook als de naam anders is. Van elk bestand blijft altijd minstens één exemplaar staan.</div>
 
-  <div class="tabs" id="tabs">
-    <div class="tab on" data-tab="dup">Dubbele bestanden</div>
-    <div class="tab" data-tab="merge">Mappen samenvoegen</div>
-    <div class="tab" data-tab="broken">Beschadigde bestanden</div>
-    <div class="tab" data-tab="bins">Prullenbakken</div>
-  </div>
-
-  <div id="tab-dup">
   <section id="setup">
     <h2>1 · WAAR ZOEKEN?</h2>
     <div class="drives" id="drives"></div>
@@ -164,46 +138,6 @@ input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--red); }
     <div id="groups"></div>
     <div class="more" id="more"></div>
   </section>
-  </div>
-
-  <!-- ===== merge ===== -->
-  <div id="tab-merge" style="display:none">
-    <h2>MAPPEN SAMENVOEGEN</h2>
-    <div class="card">
-      <div class="hint" style="margin-bottom:8px">Alles uit <b>Van</b> gaat naar <b>Naar</b>, met de mappen erin. Bestanden die er al precies hetzelfde staan worden niet dubbel overgezet. Daarna is <b>Van</b> leeg en verdwijnt.</div>
-      <div class="pick"><span class="lab">Van</span><div class="chosen" id="mFrom">nog geen map gekozen</div><button class="btn" data-mpick="from">Kies map…</button></div>
-      <div class="pick"><span class="lab">Naar</span><div class="chosen" id="mTo">nog geen map gekozen</div><button class="btn" data-mpick="to">Kies map…</button></div>
-      <div style="margin-top:14px"><button class="big" id="mPlan" disabled>Nakijken wat er gebeurt</button></div>
-    </div>
-    <div class="progress" id="mProg" style="display:none"><div class="big2" id="mProgT">Bezig…</div><div class="bar" style="height:10px;margin-top:12px"><i id="mBar" style="width:0"></i></div><div class="cur" id="mCur"></div></div>
-    <div id="mResult"></div>
-  </div>
-
-  <!-- ===== damaged ===== -->
-  <div id="tab-broken" style="display:none">
-    <h2>BESCHADIGDE BESTANDEN</h2>
-    <div class="card">
-      <div class="hint">Vindt foto's die niet meer opengaan, half herstelde foto's (onderkant grijs), afgekapte PDF's en documenten, en bestanden met alleen nullen. Typisch na het herstellen van een harde schijf.</div>
-      <div class="drives" id="bDrives" style="margin-top:12px"></div>
-      <div class="folders" id="bFolders"></div>
-      <div class="chips" id="bKinds" style="margin-top:12px">
-        <div class="chip on" data-k="fotos">Foto's</div>
-        <div class="chip on" data-k="documenten">PDF en documenten</div>
-        <div class="chip on" data-k="media">Video en audio</div>
-      </div>
-      <div style="margin-top:16px"><button class="big" id="bGo" disabled>Zoek beschadigde bestanden</button></div>
-    </div>
-    <div class="progress" id="bProg" style="display:none"><div class="big2" id="bProgT">Bezig…</div><div class="bar" style="height:10px;margin-top:12px"><i id="bBar" style="width:0"></i></div><div class="cur" id="bCur"></div><div style="margin-top:12px"><button class="btn" id="bStop">Stop</button></div></div>
-    <div id="bResult"></div>
-  </div>
-
-  <!-- ===== bins ===== -->
-  <div id="tab-bins" style="display:none">
-    <h2>PRULLENBAKKEN</h2>
-    <div class="hint" style="margin-bottom:10px">Leegmaken is definitief. Kijk eerst na wat erin zit (dubbelklik de Prullenbak op je bureaublad).</div>
-    <div id="binList"><div class="card hint">Even kijken…</div></div>
-    <button class="btn" id="binRefresh">Vernieuwen</button>
-  </div>
 </main>
 
 <div class="foot" id="foot"><div class="in">
@@ -397,7 +331,7 @@ function toggle(p, on) {
 function updateFoot() {
   let n = 0, b = 0;
   for (const g of groups) for (const f of g.files) if (selected.has(f.path)) { n++; b += g.size; }
-  $('foot').style.display = groups.length && curTab === 'dup' ? 'block' : 'none';
+  $('foot').style.display = groups.length ? 'block' : 'none';
   $('footText').innerHTML = n ? '<b>' + n.toLocaleString('nl-NL') + '</b> aangevinkt · <b>' + size(b) + '</b> ruimte terug' : 'Vink aan wat weg mag, of gebruik "Automatisch aanvinken" hierboven.';
   $('remove').disabled = n === 0;
 }
@@ -480,179 +414,6 @@ $('remove').onclick = () => {
     }
   };
 };
-
-// ================= tabs =================
-let curTab = 'dup';
-document.querySelectorAll('.tab').forEach((t) => t.onclick = () => {
-  curTab = t.dataset.tab;
-  document.querySelectorAll('.tab').forEach((x) => x.classList.toggle('on', x === t));
-  for (const n of ['dup', 'merge', 'broken', 'bins']) $('tab-' + n).style.display = n === curTab ? 'block' : 'none';
-  $('foot').style.display = curTab === 'dup' && groups.length && $('results').style.display !== 'none' ? 'block' : 'none';
-  if (curTab === 'bins') loadBins();
-  if (curTab === 'broken') drawBDrives();
-});
-
-async function waitJob(kind, onTick) {
-  for (;;) {
-    const s = await api('/api/job', { kind }).catch(() => null);
-    if (s) { onTick(s); if (!s.running) return s; }
-    await new Promise((r) => setTimeout(r, 400));
-  }
-}
-const pct = (s) => s.total ? Math.min(100, s.count / s.total * 100) : 0;
-
-// ================= merge =================
-const mSel = { from: '', to: '' };
-document.querySelectorAll('[data-mpick]').forEach((b) => b.onclick = async () => {
-  toast('Kies een map in het venster dat opent (soms staat het erachter).');
-  const r = await api('/api/pick');
-  if (!r.path) return;
-  mSel[b.dataset.mpick] = r.path;
-  const el = $(b.dataset.mpick === 'from' ? 'mFrom' : 'mTo'); el.textContent = r.path; el.classList.add('set');
-  $('mPlan').disabled = !(mSel.from && mSel.to);
-  $('mResult').innerHTML = '';
-});
-$('mPlan').onclick = async () => {
-  try { await api('/api/merge/plan', { from: mSel.from, to: mSel.to }); } catch (e) { toast(e.message); return; }
-  $('mResult').innerHTML = ''; $('mProg').style.display = 'block'; $('mBar').style.width = '0';
-  const s = await waitJob('mergeplan', (s) => { $('mProgT').textContent = 'Nakijken… ' + s.count.toLocaleString('nl-NL') + ' bestanden'; $('mCur').textContent = s.current || ''; });
-  $('mProg').style.display = 'none';
-  if (s.err) { toast(s.err); return; }
-  showPlan(s.result);
-};
-function showPlan(p) {
-  const diffs = p.items.filter((x) => x.action === 'anders');
-  $('mResult').innerHTML = '<div class="card">' +
-    '<div class="summary" style="padding:0;background:none">' +
-    '<div><div class="n">' + p.new.toLocaleString('nl-NL') + '</div><div class="l">nieuw: worden verplaatst (' + size(p.bytes) + ')</div></div>' +
-    '<div><div class="n" style="color:var(--green)">' + p.same.toLocaleString('nl-NL') + '</div><div class="l">staan er al precies zo: niet dubbel</div></div>' +
-    '<div><div class="n" style="color:var(--amber)">' + p.diff.toLocaleString('nl-NL') + '</div><div class="l">zelfde naam, andere inhoud</div></div></div>' +
-    (p.diff ? '<div class="radio"><label><input type="radio" name="keep" value="beide" checked><span><b>Beide houden</b><br><small class="hint">Het binnenkomende bestand krijgt "(2)" achter de naam.</small></span></label>' +
-      '<label><input type="radio" name="keep" value="nieuwste"><span><b>Nieuwste houden</b><br><small class="hint">De oudere versie gaat naar de Prullenbak.</small></span></label></div>' +
-      '<div class="hint" style="font-family:Consolas,monospace;font-size:12px;max-height:160px;overflow:auto">' + diffs.slice(0, 200).map((x) => esc(x.rel) + (x.newer === 'van' ? '  (Van is nieuwer)' : '  (Naar is nieuwer)')).join('<br>') + '</div>' : '') +
-    '<p class="hint">Bestanden die al precies zo in Naar staan gaan uit Van naar de Prullenbak (of op een USB-stick naar "' + esc('_Dubbelen (verwijderd)') + '").</p>' +
-    '<button class="big" id="mDo"' + (p.items.length ? '' : ' disabled') + '>Samenvoegen</button></div>';
-  if ($('mDo')) $('mDo').onclick = doMerge;
-}
-async function doMerge() {
-  const keep = (document.querySelector('input[name=keep]:checked') || {}).value || 'beide';
-  try { await api('/api/merge/do', { keep }); } catch (e) { toast(e.message); return; }
-  $('mResult').innerHTML = ''; $('mProg').style.display = 'block';
-  const s = await waitJob('merge', (s) => { $('mProgT').textContent = 'Samenvoegen… ' + s.count + ' van ' + s.total; $('mBar').style.width = pct(s) + '%'; $('mCur').textContent = s.current || ''; });
-  $('mProg').style.display = 'none';
-  const r = s.result || {};
-  $('mResult').innerHTML = '<div class="card"><h3 style="margin-top:0;color:var(--green)">Klaar</h3>' +
-    '<p>' + (r.moved || 0) + ' verplaatst · ' + (r.removed || 0) + ' dubbel weggehaald · ' + (r.renamed || 0) + ' met "(2)" erbij</p>' +
-    (r.errors && r.errors.length ? '<p style="color:var(--amber)">' + r.errors.length + ' niet gelukt:</p><div class="hint" style="font-family:Consolas,monospace;font-size:12px">' + r.errors.slice(0, 40).map(esc).join('<br>') + '</div>' : '') +
-    (r.left ? '<p class="hint">De map Van bestaat nog, omdat er iets in achterbleef.</p>' : '<p class="hint">De map Van is leeg en weggehaald.</p>') + '</div>';
-  mSel.from = ''; $('mFrom').textContent = 'nog geen map gekozen'; $('mFrom').classList.remove('set'); $('mPlan').disabled = true;
-}
-
-// ================= damaged =================
-const bRoots = new Set();
-function drawBDrives() {
-  $('bDrives').innerHTML = driveList.map((d, i) => '<div class="drive' + (bRoots.has(d.root) ? ' on' : '') + '" data-i="' + i + '"><b>' + esc(d.root.replace('\\', '')) + '</b> ' + esc(d.label || '') + '<div class="k">' + esc(d.kind) + '</div></div>').join('');
-  $('bDrives').querySelectorAll('.drive').forEach((el) => el.onclick = () => { const r = driveList[el.dataset.i].root; bRoots.has(r) ? bRoots.delete(r) : bRoots.add(r); drawBDrives(); });
-  const folders = [...bRoots].filter((r) => !driveList.some((d) => d.root === r));
-  $('bFolders').innerHTML = folders.map((f) => '<span class="tag">' + esc(f) + '<button data-f="' + esc(f) + '">×</button></span>').join('') + '<button class="btn" id="bAdd">+ Map kiezen</button>';
-  $('bFolders').querySelectorAll('button[data-f]').forEach((b) => b.onclick = () => { bRoots.delete(b.dataset.f); drawBDrives(); });
-  $('bAdd').onclick = async () => { toast('Kies een map in het venster dat opent.'); const r = await api('/api/pick'); if (r.path) { bRoots.add(r.path); drawBDrives(); } };
-  $('bGo').disabled = bRoots.size === 0;
-}
-document.querySelectorAll('#bKinds .chip').forEach((c) => c.onclick = () => c.classList.toggle('on'));
-$('bStop').onclick = () => api('/api/job/cancel', { kind: 'broken' });
-let broken = [];
-const bSel = new Set();
-$('bGo').onclick = async () => {
-  const kinds = [...document.querySelectorAll('#bKinds .chip.on')].map((c) => c.dataset.k);
-  if (!kinds.length) { toast('Kies minstens één soort.'); return; }
-  try { await api('/api/broken/start', { roots: [...bRoots], kinds }); } catch (e) { toast(e.message); return; }
-  $('bResult').innerHTML = ''; $('bProg').style.display = 'block';
-  const s = await waitJob('broken', (s) => {
-    $('bProgT').textContent = s.count ? 'Controleren… ' + s.count.toLocaleString('nl-NL') + ' van ' + s.total.toLocaleString('nl-NL') : 'Bestanden zoeken… ' + s.total.toLocaleString('nl-NL');
-    $('bBar').style.width = pct(s) + '%'; $('bCur').textContent = s.current || '';
-  });
-  $('bProg').style.display = 'none';
-  broken = s.result || []; bSel.clear();
-  for (const b of broken) if (b.level === 'kapot') bSel.add(b.path);
-  drawBroken();
-};
-function drawBroken() {
-  const k = broken.filter((b) => b.level === 'kapot').length, v = broken.length - k;
-  if (!broken.length) { $('bResult').innerHTML = '<div class="card"><b style="color:var(--green)">Niets beschadigds gevonden.</b></div>'; return; }
-  const n = bSel.size;
-  $('bResult').innerHTML = '<div class="summary"><div><div class="n" style="color:var(--red)">' + k + '</div><div class="l">kapot</div></div>' +
-    '<div><div class="n" style="color:var(--amber)">' + v + '</div><div class="l">verdacht: bekijk ze even</div></div></div>' +
-    '<div class="tools"><button class="btn" id="bApart"' + (n ? '' : ' disabled') + '>Aangevinkte apart zetten (' + n + ')</button>' +
-    '<button class="btn danger" id="bWeg"' + (n ? '' : ' disabled') + '>Aangevinkte weggooien (' + n + ')</button>' +
-    '<span class="hint">Apart zetten = naar de map "_Beschadigd (nakijken)" op die schijf, om ze daar met miniaturen na te kijken.</span></div>' +
-    '<div class="group">' + broken.slice(0, 2000).map((b) => {
-      const [dir, file] = sep(b.path); const on = bSel.has(b.path);
-      const img = /\.(jpe?g|png|gif|webp|bmp)$/i.test(file);
-      return '<div class="file' + (on ? ' sel' : '') + '"><input type="checkbox" data-b="' + esc(b.path) + '"' + (on ? ' checked' : '') + '>' +
-        '<span class="lvl-' + b.level + '">' + b.level.toUpperCase() + '</span>' +
-        '<div class="p" title="' + esc(b.path) + '"><span><span class="dir">' + esc(dir) + '</span>' + esc(file) + '</span></div>' +
-        '<span class="reason" title="' + esc(b.reason) + '">' + esc(b.reason) + '</span>' +
-        (img ? '<button class="mini" data-view="' + esc(b.path) + '">Bekijk</button>' : '<button class="mini" data-open="' + esc(b.path) + '">Open</button>') +
-        '<button class="mini" data-reveal="' + esc(b.path) + '">Toon in map</button></div>';
-    }).join('') + '</div>';
-  $('bResult').querySelectorAll('[data-b]').forEach((c) => c.onchange = () => { c.checked ? bSel.add(c.dataset.b) : bSel.delete(c.dataset.b); drawBroken(); });
-  $('bResult').querySelectorAll('[data-view]').forEach((b) => b.onclick = () => view(b.dataset.view));
-  $('bResult').querySelectorAll('[data-open]').forEach((b) => b.onclick = () => api('/api/open', { path: b.dataset.open }).catch((e) => toast(e.message)));
-  $('bResult').querySelectorAll('[data-reveal]').forEach((b) => b.onclick = () => api('/api/reveal', { path: b.dataset.reveal }).catch((e) => toast(e.message)));
-  if ($('bApart')) $('bApart').onclick = () => brokenAct('apart');
-  if ($('bWeg')) $('bWeg').onclick = () => { if (confirm(n + ' bestanden naar de Prullenbak (op USB: naar "_Dubbelen (verwijderd)")?')) brokenAct('weg'); };
-}
-async function brokenAct(how) {
-  try {
-    const r = await api('/api/broken/act', { paths: [...bSel], how });
-    const ok = r.results.filter((x) => x.ok);
-    for (const x of ok) { bSel.delete(x.path); broken = broken.filter((b) => b.path !== x.path); }
-    const dirs = [...new Set(ok.map((x) => x.how).filter(Boolean))];
-    toast(ok.length + ' bestanden ' + (how === 'apart' ? 'apart gezet' : 'weggegooid') + (r.results.length - ok.length ? ', ' + (r.results.length - ok.length) + ' niet gelukt' : ''));
-    if (how === 'apart' && dirs.length) api('/api/open', { path: dirs[0] }).catch(() => {});
-    drawBroken();
-  } catch (e) { toast(e.message); }
-}
-
-// ================= bins =================
-$('binRefresh').onclick = () => loadBins();
-async function loadBins() {
-  $('binList').innerHTML = '<div class="card hint">Even kijken…</div>';
-  const list = await api('/api/bins').catch((e) => { toast(e.message); return []; });
-  $('binList').innerHTML = list.map((b, i) => {
-    const rows = [];
-    rows.push('<div class="binrow"><div class="what"><b>Prullenbak</b><div class="hint">' + b.mineCount.toLocaleString('nl-NL') + ' items</div></div><div class="sz">' + size(b.mineSize) + '</div>' +
-      '<button class="btn danger" data-empty="mine" data-i="' + i + '"' + (b.mineCount ? '' : ' disabled') + '>Leegmaken</button></div>');
-    if (b.others && b.others.length) {
-      const known = b.others.filter((o) => o.size >= 0).reduce((a, o) => a + o.size, 0);
-      rows.push('<div class="binrow"><div class="what"><b>Oude prullenbakken</b> (' + b.others.length + ')<div class="hint">Van andere gebruikers of een vorige Windows-installatie. Windows vraagt om toestemming.</div></div>' +
-        '<div class="sz">' + (b.others.some((o) => o.size < 0) ? (known ? size(known) + '+' : 'beveiligd') : size(known)) + '</div>' +
-        '<button class="btn danger" data-empty="others" data-i="' + i + '">Leegmaken</button></div>');
-    }
-    for (const f of b.folders || []) {
-      rows.push('<div class="binrow"><div class="what"><b>' + esc(sep(f.path)[1]) + '</b><div class="hint">' + esc(f.path) + '</div></div><div class="sz">' + size(Math.max(0, f.size)) + '</div>' +
-        '<button class="btn" data-openf="' + esc(f.path) + '">Open</button><button class="btn danger" data-folder="' + esc(f.path) + '">Leegmaken</button></div>');
-    }
-    return '<div class="card"><b style="font-size:17px">' + esc(b.root) + '</b> ' + esc(b.label || '') + ' <span class="hint">' + esc(b.kind) + '</span>' + rows.join('') + '</div>';
-  }).join('') || '<div class="card hint">Geen schijven gevonden.</div>';
-  $('binList').querySelectorAll('[data-empty]').forEach((btn) => btn.onclick = async () => {
-    const b = list[btn.dataset.i];
-    const what = btn.dataset.empty;
-    const msg = what === 'mine' ? 'De prullenbak van ' + b.root + ' definitief leegmaken?' : 'De oude prullenbakken op ' + b.root + ' definitief leegmaken? Windows vraagt zo om toestemming.';
-    if (!confirm(msg)) return;
-    try {
-      await api('/api/bins/empty', { what, root: b.root, paths: what === 'others' ? b.others.map((o) => o.path) : [] });
-      toast(what === 'others' ? 'Klik "Ja" in het Windows-venster. Daarna Vernieuwen.' : 'Leeggemaakt.');
-      setTimeout(loadBins, what === 'others' ? 6000 : 500);
-    } catch (e) { toast(e.message); }
-  });
-  $('binList').querySelectorAll('[data-folder]').forEach((btn) => btn.onclick = async () => {
-    if (!confirm(btn.dataset.folder + ' definitief leegmaken?')) return;
-    try { await api('/api/bins/empty', { what: 'folder', paths: [btn.dataset.folder] }); toast('Leeggemaakt.'); loadBins(); } catch (e) { toast(e.message); }
-  });
-  $('binList').querySelectorAll('[data-openf]').forEach((btn) => btn.onclick = () => api('/api/open', { path: btn.dataset.openf }).catch((e) => toast(e.message)));
-}
 
 loadDrives().then(showRoots);
 </script>

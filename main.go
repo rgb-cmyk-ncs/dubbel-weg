@@ -7,7 +7,6 @@ package main
 import (
 	_ "embed"
 	"encoding/json"
-	"errors"
 	"net"
 	"net/http"
 	"os"
@@ -94,37 +93,7 @@ func inResults(p string) bool {
 			}
 		}
 	}
-	return inBroken(p)
-}
-
-// inBroken: the path is in the last damaged-files list.
-func inBroken(p string) bool {
-	j := getJob("broken")
-	j.mu.Lock()
-	defer j.mu.Unlock()
-	list, _ := j.Result.([]Broken)
-	k := strings.ToLower(p)
-	for _, b := range list {
-		if strings.ToLower(b.Path) == k {
-			return true
-		}
-	}
 	return false
-}
-
-// dropBroken takes handled files out of the damaged-files list.
-func dropBroken(done map[string]bool) {
-	j := getJob("broken")
-	j.mu.Lock()
-	defer j.mu.Unlock()
-	list, _ := j.Result.([]Broken)
-	keep := []Broken{}
-	for _, b := range list {
-		if !done[strings.ToLower(b.Path)] {
-			keep = append(keep, b)
-		}
-	}
-	j.Result = keep
 }
 
 func routes(mux *http.ServeMux) {
@@ -282,9 +251,8 @@ func routes(mux *http.ServeMux) {
 			}
 			ok := inResults(req.Path)
 			// The quarantine folder of a drive may also be opened.
-			switch filepath.Base(req.Path) {
-			case quarantineName, brokenName, ".SchijfSync-prullenbak":
-				ok = ok || filepath.Clean(filepath.Dir(req.Path)) == filepath.Clean(rootOf(req.Path))
+			if !ok && filepath.Base(req.Path) == quarantineName {
+				ok = true
 			}
 			if !ok {
 				http.Error(w, "nee", http.StatusForbidden)
@@ -299,8 +267,7 @@ func routes(mux *http.ServeMux) {
 	}
 	post("/api/reveal", pathAction(reveal))
 	post("/api/open", pathAction(func(p string) error {
-		switch filepath.Base(p) {
-		case quarantineName, brokenName, ".SchijfSync-prullenbak":
+		if filepath.Base(p) == quarantineName {
 			return openFolder(p)
 		}
 		return openFile(p)
@@ -315,169 +282,6 @@ func routes(mux *http.ServeMux) {
 		writeJSON(w, map[string]bool{"ok": true})
 	})
 	// Preview of a picture, song or video from the results.
-	// ---- extra tabs: background jobs ----
-	post("/api/job", func(w http.ResponseWriter, r *http.Request) {
-		var req struct{ Kind string }
-		readJSON(r, &req)
-		writeJSON(w, getJob(req.Kind).status())
-	})
-	post("/api/job/cancel", func(w http.ResponseWriter, r *http.Request) {
-		var req struct{ Kind string }
-		readJSON(r, &req)
-		getJob(req.Kind).Cancel.Store(true)
-		writeJSON(w, map[string]bool{"ok": true})
-	})
-	busy := func(w http.ResponseWriter) { http.Error(w, "er loopt al een taak van deze soort", http.StatusConflict) }
-
-	// Damaged files.
-	post("/api/broken/start", func(w http.ResponseWriter, r *http.Request) {
-		var req struct {
-			Roots []string
-			Kinds []string
-		}
-		if err := readJSON(r, &req); err != nil || len(req.Roots) == 0 {
-			http.Error(w, "kies eerst een schijf of map", http.StatusBadRequest)
-			return
-		}
-		if !startJob("broken", func(j *Job) (any, error) {
-			out := ScanBroken(req.Roots, req.Kinds, j)
-			if out == nil {
-				out = []Broken{}
-			}
-			return out, nil
-		}) {
-			busy(w)
-			return
-		}
-		writeJSON(w, map[string]bool{"ok": true})
-	})
-	post("/api/broken/act", func(w http.ResponseWriter, r *http.Request) {
-		var req struct {
-			Paths []string
-			How   string // "apart" or "weg"
-		}
-		if err := readJSON(r, &req); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-		for _, p := range req.Paths {
-			if !inBroken(p) {
-				http.Error(w, p+" hoort niet bij de lijst", http.StatusForbidden)
-				return
-			}
-		}
-		var res []RemoveResult
-		if req.How == "apart" {
-			res = moveBroken(req.Paths)
-		} else {
-			for _, p := range req.Paths {
-				x := RemoveResult{Path: p}
-				if err := discard(p); err != nil {
-					x.Err = err.Error()
-				} else {
-					x.OK = true
-					logLine("beschadigd, weg: " + p)
-				}
-				res = append(res, x)
-			}
-		}
-		done := map[string]bool{}
-		for _, x := range res {
-			if x.OK {
-				done[strings.ToLower(x.Path)] = true
-			}
-		}
-		dropBroken(done)
-		writeJSON(w, map[string]any{"results": res})
-	})
-
-	// Merging folders.
-	post("/api/merge/plan", func(w http.ResponseWriter, r *http.Request) {
-		var req struct{ From, To string }
-		readJSON(r, &req)
-		if err := checkMergeFolders(req.From, req.To); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-		if !startJob("mergeplan", func(j *Job) (any, error) { return PlanMerge(req.From, req.To, j) }) {
-			busy(w)
-			return
-		}
-		writeJSON(w, map[string]bool{"ok": true})
-	})
-	post("/api/merge/do", func(w http.ResponseWriter, r *http.Request) {
-		var req struct{ Keep string }
-		readJSON(r, &req)
-		pj := getJob("mergeplan")
-		pj.mu.Lock()
-		plan, _ := pj.Result.(*MergePlan)
-		pj.mu.Unlock()
-		if plan == nil {
-			http.Error(w, "kijk eerst na wat er gaat gebeuren", http.StatusBadRequest)
-			return
-		}
-		if !startJob("merge", func(j *Job) (any, error) {
-			j.Total.Store(int64(len(plan.Items)))
-			res := DoMerge(plan, req.Keep, j)
-			pj.mu.Lock()
-			pj.Result = nil // a plan is used once
-			pj.mu.Unlock()
-			return res, nil
-		}) {
-			busy(w)
-			return
-		}
-		writeJSON(w, map[string]bool{"ok": true})
-	})
-
-	// Recycle bins.
-	post("/api/bins", func(w http.ResponseWriter, r *http.Request) {
-		list := listBins()
-		if list == nil {
-			list = []BinInfo{}
-		}
-		writeJSON(w, list)
-	})
-	post("/api/bins/empty", func(w http.ResponseWriter, r *http.Request) {
-		var req struct {
-			What  string // "mine", "others", "folder"
-			Root  string
-			Paths []string
-		}
-		if err := readJSON(r, &req); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-		var err error
-		switch req.What {
-		case "mine":
-			err = emptyMyBin(req.Root)
-			logLine("prullenbak geleegd: " + req.Root)
-		case "others":
-			for _, p := range req.Paths {
-				if !isOtherBin(p) {
-					http.Error(w, "nee", http.StatusForbidden)
-					return
-				}
-			}
-			err = emptyOtherBins(req.Paths)
-			logLine("oude prullenbakken geleegd: " + strings.Join(req.Paths, ", "))
-		case "folder":
-			for _, p := range req.Paths {
-				if err = emptyOwnFolder(p); err != nil {
-					break
-				}
-			}
-		default:
-			err = errors.New("onbekend")
-		}
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		writeJSON(w, map[string]bool{"ok": true})
-	})
-
 	mux.HandleFunc("/api/file", func(w http.ResponseWriter, r *http.Request) {
 		p := r.URL.Query().Get("path")
 		if !inResults(p) || r.Header.Get("Sec-Fetch-Site") == "cross-site" {
