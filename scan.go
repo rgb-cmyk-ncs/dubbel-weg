@@ -26,6 +26,7 @@ var kindExt = map[string][]string{
 // Folders that are never searched: Windows' own, and our own quarantine.
 var alwaysSkip = map[string]bool{
 	"$recycle.bin": true, "system volume information": true, strings.ToLower(quarantineName): true,
+	strings.ToLower(brokenName): true, ".schijfsync-prullenbak": true,
 	"recycler": true, "$windows.~bt": true, "$windows.~ws": true, "windows.old": true,
 }
 
